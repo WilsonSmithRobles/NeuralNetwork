@@ -33,3 +33,36 @@ double NeuronTransferFunctions::ReLU_Derivative(double x)
 		return 1;
 	return 0;
 }
+
+
+//###########################################################Neuron Class##############################################################
+Neuron::Neuron(unsigned int transferFunctionUsed, const Layer& nextLayer)
+{
+	for (size_t i = 0; i < nextLayer.size(); ++i) {
+
+	}
+
+	switch (transferFunctionUsed) {
+	case 0:
+		transfer = &NeuronTransferFunctions::hyperbolicTangent;
+		derivative = &NeuronTransferFunctions::hyperbolicTangentDerivative;
+
+	case 1:
+		transfer = &NeuronTransferFunctions::ReLU_Function;
+		derivative = &NeuronTransferFunctions::ReLU_Derivative;
+
+	case 2:
+		transfer = &NeuronTransferFunctions::sigmoid;
+		derivative = &NeuronTransferFunctions::sigmoid_derivative;
+	}
+}
+
+double Neuron::transferFunction(double x)
+{
+	return (possibleFunctions->*transfer)(x);
+}
+
+double Neuron::transferFunctionDerivative(double x)
+{
+	return (possibleFunctions->*derivative)(x);
+}

@@ -11,7 +11,6 @@ struct NeuronTransferFunctions
 	double sigmoid_derivative(double x);
 	double ReLU_Function(double x);
 	double ReLU_Derivative(double x);
-
 };
 
 
@@ -23,29 +22,47 @@ typedef std::vector<Neuron> Layer;
 
 class Neuron {
 public:
-	Neuron(size_t transferFunctionUsed);
+	Neuron(unsigned int transferFunctionUsed, const Layer& nextLayer);
 	~Neuron();
-	double get_output();
 
+	double get_output();
+	void feedForward(const Layer& prevLayer);
+
+	//Properties
+	std::vector<Connection> outConnections;
 
 private:
 	double transferFunction(double Input);
 	double transferFunctionDerivative(double x);
 	double my_output;
-	std::vector<Connection> outConnections;
 
+	double(NeuronTransferFunctions::* transfer)(double);
+	double(NeuronTransferFunctions::* derivative)(double);
+	NeuronTransferFunctions* possibleFunctions;
+
+	//Properties
+	double eta;
+	double alpha;
 };
+
+
+
+
 
 class NeuralNet
 {
 public:
 	NeuralNet();
+	NeuralNet(std::vector<unsigned int> topology, std::vector<unsigned int> transferFunctions);
 	~NeuralNet();
+	void resetNet();
 	void feedForward(std::vector<double> Inputs);
 	void backPropagation(std::vector<double> Targets);
 	int getMaximizedOutput();
 
 private:
+	//Properties
+	std::vector<Layer> myLayers;
 
 };
 
