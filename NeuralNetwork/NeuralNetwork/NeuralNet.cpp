@@ -1,5 +1,10 @@
 #include "NeuralNet.h"
 
+Connection::Connection(double weight, double deltaWeight)
+{
+	this->weight = weight;
+	this->deltaWeight = deltaWeight;
+}
 
 //###########################################################Neuron Transfer Functions#################################################
 double NeuronTransferFunctions::hyperbolicTangent(double x)
@@ -36,10 +41,19 @@ double NeuronTransferFunctions::ReLU_Derivative(double x)
 
 
 //###########################################################Neuron Class##############################################################
-Neuron::Neuron(unsigned int transferFunctionUsed, const Layer& nextLayer)
+Neuron::Neuron(unsigned int transferFunctionUsed, size_t number_outputs)
 {
-	for (size_t i = 0; i < nextLayer.size(); ++i) {
+	int range_from = -1000;
+	int range_to = 1000;
+	std::random_device                  rand_dev;
+	std::mt19937                        generator(rand_dev());
+	std::uniform_int_distribution<int>  distr(range_from, range_to);
 
+	double randomWeight = (double) distr(generator) / 100;
+
+	outConnections.clear();
+	for (size_t i = 0; i < number_outputs; ++i) {
+		outConnections.push_back(Connection(randomWeight, 0.0));
 	}
 
 	switch (transferFunctionUsed) {
@@ -55,6 +69,10 @@ Neuron::Neuron(unsigned int transferFunctionUsed, const Layer& nextLayer)
 		transfer = &NeuronTransferFunctions::sigmoid;
 		derivative = &NeuronTransferFunctions::sigmoid_derivative;
 	}
+}
+Neuron::~Neuron()
+{
+
 }
 
 double Neuron::transferFunction(double x)

@@ -1,7 +1,7 @@
 #pragma once
-
 #include <vector>
 #include <math.h>
+#include <random>
 
 struct NeuronTransferFunctions
 {
@@ -16,13 +16,14 @@ struct NeuronTransferFunctions
 
 struct Connection
 {
+	Connection(double weight, double deltaWeight);
 	double weight, deltaWeight;
 };
 typedef std::vector<Neuron> Layer;
 
 class Neuron {
 public:
-	Neuron(unsigned int transferFunctionUsed, const Layer& nextLayer);
+	Neuron(unsigned int transferFunctionUsed, size_t number_outputs);
 	~Neuron();
 
 	double get_output();
@@ -36,8 +37,8 @@ private:
 	double transferFunctionDerivative(double x);
 	double my_output;
 
-	double(NeuronTransferFunctions::* transfer)(double);
-	double(NeuronTransferFunctions::* derivative)(double);
+	double(NeuronTransferFunctions::* transfer)(double x);
+	double(NeuronTransferFunctions::* derivative)(double x);
 	NeuronTransferFunctions* possibleFunctions;
 
 	//Properties
@@ -47,14 +48,13 @@ private:
 
 
 
-
-
 class NeuralNet
 {
 public:
 	NeuralNet();
 	NeuralNet(std::vector<unsigned int> topology, std::vector<unsigned int> transferFunctions);
 	~NeuralNet();
+	void setTopology(std::vector<unsigned int> topology, std::vector<unsigned int> transferFunctions);
 	void resetNet();
 	void feedForward(std::vector<double> Inputs);
 	void backPropagation(std::vector<double> Targets);
@@ -63,6 +63,5 @@ public:
 private:
 	//Properties
 	std::vector<Layer> myLayers;
-
 };
 
