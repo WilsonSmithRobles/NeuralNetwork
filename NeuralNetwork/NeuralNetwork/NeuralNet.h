@@ -23,14 +23,21 @@ typedef std::vector<Neuron> Layer;
 
 class Neuron {
 public:
-	Neuron(unsigned int transferFunctionUsed, size_t number_outputs);
-	~Neuron();
+	Neuron(unsigned int transferFunctionUsed, size_t number_outputs, unsigned int my_index);
+	~Neuron(void);
 
-	double get_output();
+	void setOutput(double output) { this->my_output = output; };
+	double getOutput() { return my_output; };
+
 	void feedForward(const Layer& prevLayer);
 
-	//Properties
-	std::vector<Connection> outConnections;
+	void calcOutputGradients(double targetVal);
+	void calcHiddenGradients(const Layer& nextLayer);
+	void updateInputWeights(Layer& prevLayer);
+
+	std::vector<Connection> getOutputWeights() { return outConnections; }
+	void setOutputWeights(std::vector<Connection> newWeights) { this->outConnections = newWeights; }
+	void updateEta(double newEta) { this->eta = newEta; }
 
 private:
 	double transferFunction(double Input);
@@ -41,9 +48,14 @@ private:
 	double(NeuronTransferFunctions::* derivative)(double x);
 	NeuronTransferFunctions* possibleFunctions;
 
+	double myErrorContrib(const Layer& nextLayer) const;
+
 	//Properties
 	double eta;
 	double alpha;
+	std::vector<Connection> outConnections;
+	unsigned myIndex;
+	double myGradient;
 };
 
 
@@ -51,17 +63,28 @@ private:
 class NeuralNet
 {
 public:
-	NeuralNet();
-	NeuralNet(std::vector<unsigned int> topology, std::vector<unsigned int> transferFunctions);
+	NeuralNet(void);
+	NeuralNet(const std::vector<unsigned int> topology, const std::vector<unsigned int> transferFunctions);
 	~NeuralNet();
-	void setTopology(std::vector<unsigned int> topology, std::vector<unsigned int> transferFunctions);
+
+	void setTopology(const std::vector<unsigned int> topology, const std::vector<unsigned int> transferFunctions);
 	void resetNet();
-	void feedForward(std::vector<double> Inputs);
-	void backPropagation(std::vector<double> Targets);
+
+	//Basic operations from a NeuralNet.
+	void feedForward(const std::vector<double> Inputs);
+	void backPropagation(const std::vector<double> Targets);
 	int getMaximizedOutput();
+	std::vector<double> getResults();
+
+	//Errors are only computed while training.
+	double getRecentAverageError(void) const { return m_recentAverageError; }
+	double getLastError(void) const { return m_error; }
 
 private:
-	//Properties
 	std::vector<Layer> myLayers;
+	double m_error;
+	double m_recentAverageError;
+	double m_recentAverageSmoothingFactor;
+	void updateNetEtas(double newEtas);
 };
 

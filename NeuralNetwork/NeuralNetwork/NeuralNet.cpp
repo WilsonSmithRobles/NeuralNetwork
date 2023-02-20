@@ -41,7 +41,7 @@ double NeuronTransferFunctions::ReLU_Derivative(double x)
 
 
 //###########################################################Neuron Class##############################################################
-Neuron::Neuron(unsigned int transferFunctionUsed, size_t number_outputs)
+Neuron::Neuron(unsigned int transferFunctionUsed, size_t number_outputs, unsigned int my_index)
 {
 	int range_from = -1000;
 	int range_to = 1000;
@@ -49,7 +49,7 @@ Neuron::Neuron(unsigned int transferFunctionUsed, size_t number_outputs)
 	std::mt19937                        generator(rand_dev());
 	std::uniform_int_distribution<int>  distr(range_from, range_to);
 
-	double randomWeight = (double) distr(generator) / 100;
+	double randomWeight = (double) distr(generator) / 1000;
 
 	outConnections.clear();
 	for (size_t i = 0; i < number_outputs; ++i) {
@@ -69,17 +69,18 @@ Neuron::Neuron(unsigned int transferFunctionUsed, size_t number_outputs)
 		transfer = &NeuronTransferFunctions::sigmoid;
 		derivative = &NeuronTransferFunctions::sigmoid_derivative;
 	}
+
+	this->eta = 0.5;
+	this->alpha = 0.3;
+	this->myIndex = my_index;
 }
 Neuron::~Neuron()
-{
-
-}
+{}
 
 double Neuron::transferFunction(double x)
 {
 	return (possibleFunctions->*transfer)(x);
 }
-
 double Neuron::transferFunctionDerivative(double x)
 {
 	return (possibleFunctions->*derivative)(x);
