@@ -100,7 +100,8 @@ double Neuron::transferFunctionDerivative(double x)
 //###########################################################Net Class##############################################################
 NeuralNet::NeuralNet(void)
 {}
-
+NeuralNet::~NeuralNet(void)
+{}
 NeuralNet::NeuralNet(const std::vector<unsigned int> topology, const std::vector<unsigned int> transferFunctions)
 {
 	size_t numLayers = topology.size();
@@ -140,7 +141,6 @@ void NeuralNet::setTopology(const std::vector<unsigned int> topology, const std:
 	this->m_recentAverageError = 0.0;
 	this->m_recentAverageSmoothingFactor = 0.0;
 }
-
 void NeuralNet::resetNet()
 {
 	this->myLayers.clear();
@@ -160,6 +160,48 @@ void NeuralNet::feedForward(const std::vector<double> Inputs)
 		Layer& prevLayer = myLayers[layerNum - 1];
 		for (unsigned n = 0; n < myLayers[layerNum].size() - 1; ++n) {
 			myLayers[layerNum][n].feedForward(prevLayer);
+		}
+	}
+}
+void NeuralNet::backPropagation(const std::vector<double> targets)
+{
+
+}
+unsigned NeuralNet::getMaximizedOutput() 
+{
+	Layer& outputLayer = this->myLayers.back();
+	size_t numOutputs = this->myLayers.back().size() - 1;
+
+	std::vector<double> outputs;
+
+	for (size_t outNeuron = 0; outNeuron < numOutputs; ++outNeuron) {
+		outputs.push_back(outputLayer[outNeuron].getOutputVal());
+	}
+
+	auto max_it = std::max_element(outputs.begin(), outputs.end());
+	size_t index = std::distance(outputs.begin(), max_it);
+
+	return index;
+}
+std::vector<double> NeuralNet::getResults()
+{
+	Layer& outputLayer = this->myLayers.back();
+	size_t numOutputs = this->myLayers.back().size() - 1;
+
+	std::vector<double> outputs;
+
+	for (size_t outNeuron = 0; outNeuron < numOutputs; ++outNeuron) {
+		outputs.push_back(outputLayer[outNeuron].getOutputVal());
+	}
+
+	return outputs;
+}
+
+void NeuralNet::updateNetEtas(double newEtas)
+{
+	for (unsigned i = 0; i < this->myLayers.size() - 1; ++i) {
+		for (unsigned j = 0; j < this->myLayers[i].size(); ++j) {
+			this->myLayers[i][j].updateEta(newEtas);
 		}
 	}
 }
