@@ -2,6 +2,7 @@
 #include <vector>
 #include <math.h>
 #include <random>
+#include <cassert>
 
 struct NeuronTransferFunctions
 {
@@ -54,7 +55,7 @@ private:
 	double eta;
 	double alpha;
 	std::vector<Connection> outConnections;
-	unsigned myIndex;
+	unsigned int myIndex;
 	double myGradient;
 };
 
@@ -73,7 +74,7 @@ public:
 	//Basic operations from a NeuralNet.
 	void feedForward(const std::vector<double> Inputs);
 	void backPropagation(const std::vector<double> Targets);
-	int getMaximizedOutput();
+	unsigned getMaximizedOutput();
 	std::vector<double> getResults();
 
 	//Errors are only computed while training.
