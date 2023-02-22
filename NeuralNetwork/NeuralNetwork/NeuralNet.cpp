@@ -218,7 +218,56 @@ void NeuralNet::feedForward(const std::vector<double> Inputs)
 }
 void NeuralNet::backPropagation(const std::vector<double> targets)
 {
+	//Calculate overall net error (RMS of output neuron errors)
 
+	Layer& outputLayer = this->myLayers.back();
+	m_error = 0.0;
+
+	for (unsigned n = 0; n < outputLayer.size() - 1; ++n) {
+		double delta = targets[n] - outputLayer[n].getOutput();			//Delta is the difference between objective and error.
+		m_error += delta * delta;			//Compute summative of the errors squared.
+	}
+	m_error /= outputLayer.size() - 1;			// get average error squared
+	m_error = sqrt(m_error);					// RMS
+
+	// Implement a recent average measurement:
+
+	m_recentAverageError =
+		(m_recentAverageError * m_recentAverageSmoothingFactor + m_error)
+		/ (m_recentAverageSmoothingFactor + 1.0);
+
+	//Calculate output layer gradients
+
+	size_t layerSize = outputLayer.size();;
+	for (size_t n = 0; n < layerSize - 1; ++n) {
+		outputLayer[n].calcOutputGradients(targets[n]);
+	}
+
+	//Calculate gradients on hidden layers
+
+	size_t numLayers = this->myLayers.size();
+	for (size_t layerNum = numLayers - 2; layerNum > 0; --layerNum) {
+		Layer& hiddenLayer = this->myLayers[layerNum];
+		Layer& nextLayer = this->myLayers[layerNum + 1];
+
+		layerSize = hiddenLayer.size();
+		for (size_t n = 0; n < layerSize; ++n) {
+			hiddenLayer[n].calcHiddenGradients(nextLayer);
+		}
+	}
+
+	//For all layers from outputs to first hidden layer
+	//update connection weights.
+
+	for (size_t layerNum = numLayers - 1; layerNum > 0; --layerNum) {
+		Layer& layer = this->myLayers[layerNum];
+		Layer& prevLayer = this->myLayers[layerNum - 1];
+
+		layerSize = layer.size();
+		for (size_t n = 0; n < layerSize - 1; n++) {
+			layer[n].updateInputWeights(prevLayer);
+		}
+	}
 }
 unsigned NeuralNet::getMaximizedOutput() 
 {
