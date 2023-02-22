@@ -86,6 +86,56 @@ void Neuron::feedForward(const Layer& prevLayer)
 	}
 }
 
+void Neuron::updateInputWeights(Layer& prevLayer)
+{
+	// The weights to be updated are in the Connection container
+	// in the neurons in the preceeding layer.
+
+	for (unsigned n = 0; n < prevLayer.size(); ++n) {
+		Neuron& neuron = prevLayer[n];
+		double oldDeltaWeight = neuron.outConnections[this->myIndex].deltaWeight;			//Get the weight prior to updating
+
+		double newDeltaWeight =
+			//Individual input, magnified by the gradient and train rate.
+			//eta = overall net learning rate -> 0.0 - slow learner; 1.0 - reckless learner
+			eta
+			* neuron.getOutput()
+			* this->myGradient
+			//Also add momentum = a fraction of the previous delta_weight
+			//alpha = momentum -> 0.0 - no momentum; 0.5 - moderate momentum.
+			+ this->alpha
+			* oldDeltaWeight
+			;
+
+		neuron.outConnections[this->myIndex].deltaWeight = newDeltaWeight;
+		neuron.outConnections[this->myIndex].weight += newDeltaWeight;
+	}
+};
+
+double Neuron::myErrorContrib(const Layer& nextLayer) const
+{
+	double sum = 0.0;
+
+	//Sum our contributions of the errors at the nodes we feed.
+
+	for (unsigned n = 0; n < nextLayer.size() - 1; ++n) {
+		sum += this->outConnections[n].weight * nextLayer[n].m_gradient;			//For each weight to the right we multiply by gradient of that neuron ignoring the bias neuron to the right and add it to sum.
+	}
+	return sum;
+};
+
+void Neuron::calcHiddenGradients(const Layer& nextLayer)
+{
+	double dow = this->myErrorContrib(nextLayer);
+	this->myGradient = dow * Neuron::transferFunctionDerivative(this->my_output);
+}
+
+void Neuron::calcOutputGradients(double targetVal)
+{
+	double delta = targetVal - this->my_output;
+	this->myGradient = delta * Neuron::transferFunctionDerivative(this->my_output);
+};
+
 double Neuron::transferFunction(double x)
 {
 	return (possibleFunctions->*transfer)(x);
@@ -144,6 +194,9 @@ void NeuralNet::setTopology(const std::vector<unsigned int> topology, const std:
 void NeuralNet::resetNet()
 {
 	this->myLayers.clear();
+	this->m_error = 0;
+	this->m_recentAverageError = 0;
+	this->m_recentAverageSmoothingFactor = 0;
 }
 
 void NeuralNet::feedForward(const std::vector<double> Inputs)
