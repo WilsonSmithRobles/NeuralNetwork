@@ -2,12 +2,14 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <iostream>
 #include "filesReaderWriter.h"
 
 struct LabeledInputs
 {
-	std::vector<double> inputs;
-	std::vector<double> targets;
+	std::vector<std::vector<double>> inputs;
+	std::vector<std::vector<double>> targets;
 };
 
 class TrainingData
@@ -24,10 +26,11 @@ public:
 	LabeledInputs getShuffledValidationVectors(void);
 
 private:
+	filesReaderWriter fileManager;
 	LabeledInputs allSamples;
 	LabeledInputs Training;
 	LabeledInputs Autoevaluation;
 	LabeledInputs Validation;
-	void shuffleAndSeparateSamplesInGroups(void);
+	LabeledInputs shuffleLabeledInputs(LabeledInputs tags2shuffle);
 };
 
