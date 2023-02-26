@@ -56,13 +56,15 @@ TrainingData::TrainingData(std::string csv_samplesFile, std::string csv_topology
 	//autoeval, train, validacion.
 	std::random_shuffle(index_vector.begin(), index_vector.end());
 
+	double firstHalf = rowsSize / 2;
+	double thirdQuarter = rowsSize * 0.75;
 	for (size_t i = 0; i < rowsSize; ++i) {
-		if (i < rowsSize / 2) {
+		if (i < firstHalf) {
 			this->Training.inputs.push_back(this->allSamples.inputs[index_vector[i]]);
 			this->Training.targets.push_back(this->allSamples.targets[index_vector[i]]);
 			continue;
 		}
-		if (i < rowsSize * 2 / 3) {
+		if (i < thirdQuarter) {
 			this->Autoevaluation.inputs.push_back(this->allSamples.inputs[index_vector[i]]);
 			this->Autoevaluation.targets.push_back(this->allSamples.targets[index_vector[i]]);
 			continue;
@@ -80,27 +82,29 @@ LabeledInputs TrainingData::getShuffledTrainingVectors(void)
 }
 LabeledInputs TrainingData::getShuffledAutoevalVectors(void)
 {
-	return this->shuffleLabeledInputs(this->Training);
+	return this->shuffleLabeledInputs(this->Autoevaluation);
 }
 LabeledInputs TrainingData::getShuffledValidationVectors(void)
 {
-	return this->shuffleLabeledInputs(this->Training);
+	return this->shuffleLabeledInputs(this->Validation);
 }
 
-LabeledInputs TrainingData::shuffleLabeledInputs(LabeledInputs tags2shuffle)
+LabeledInputs TrainingData::shuffleLabeledInputs(const LabeledInputs& tags2shuffle)
 {
 	size_t labelsSize = tags2shuffle.inputs.size();
-	std::vector<unsigned> index_vector(labelsSize);
+	std::vector<size_t> index_vector(labelsSize);
 	LabeledInputs shuffledLabels;
 
-	for (unsigned i = 0; i < labelsSize; ++i) {
+	for (size_t i = 0; i < labelsSize; ++i) {
 		index_vector[i] = i;
 	}
 
 	std::random_shuffle(index_vector.begin(), index_vector.end());
 
 	for (size_t i = 0; i < labelsSize; ++i) {
-
+		shuffledLabels.inputs[i] = tags2shuffle.inputs[index_vector[i]];
+		shuffledLabels.targets[i] = tags2shuffle.targets[index_vector[i]];
 	}
 
+	return shuffledLabels;
 }

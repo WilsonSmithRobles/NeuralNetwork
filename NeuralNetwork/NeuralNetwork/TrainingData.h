@@ -31,6 +31,6 @@ private:
 	LabeledInputs Training;
 	LabeledInputs Autoevaluation;
 	LabeledInputs Validation;
-	LabeledInputs shuffleLabeledInputs(LabeledInputs tags2shuffle);
+	LabeledInputs shuffleLabeledInputs(const LabeledInputs& tags2shuffle);
 };
 
